@@ -1,0 +1,77 @@
+<?php
+require_once dirname(__FILE__) . '/wconsumer_vimeo.commons.php';
+require_once dirname(__FILE__) . '/wconsumer_vimeo.field.inc';
+/**
+ * Implements hook_menu().
+ */
+function wconsumer_vimeo_menu() {
+
+    $items = array();
+    $items['admin/config/fields'] = array(
+        'title' => 'Fields',
+        'description' => 'Fields Configuration.',
+        'position' => 'right',
+        'weight' => -100,
+        'access arguments' => array('administer wconsumer_vimeo settings')
+    );
+    
+    $items['admin/config/fields/wconsumer_vimeo'] = array(
+        'title' => 'On vimeo settings',
+        'description' => 'Define client id, token for using vimeo api',
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('wconsumer_vimeo_admin_settings'),
+        'access arguments' => array('administer wconsumer_vimeo settings')
+    );
+    
+    return $items;
+}
+
+function wconsumer_vimeo_admin_settings() {
+    $form = array();
+    $form['wconsumer_vimeo_access_token'] = array('#type' => 'textfield',
+        '#title' => t('Access token'),
+        '#default_value' => variable_get('wconsumer_vimeo_access_token', ''),
+        '#description' => t('Access token'),
+    );
+    $form['wconsumer_vimeo_access_token_secret'] = array('#type' => 'textfield',
+        '#title' => t('Access token secret'),
+        '#default_value' => variable_get('wconsumer_vimeo_access_token_secret', ''),
+        '#description' => t('Access token secret'),
+    );
+    $form['wconsumer_vimeo_videos_per_page'] = array('#type' => 'textfield',
+        '#title' => t('Videos Per Page'),
+        '#default_value' => variable_get('wconsumer_vimeo_videos_per_page', '20'),
+        '#description' => t('Access token'),
+    );
+    $form['wconsumer_vimeo_video_width_on_edit'] = array('#type' => 'textfield',
+        '#title' => t('Video\'s width on edit page'),
+        '#default_value' => variable_get('wconsumer_vimeo_video_width_on_edit', '320'),
+        '#description' => t('Access token'),
+    );
+    $form['wconsumer_vimeo_video_width_on_view'] = array('#type' => 'textfield',
+        '#title' => t('Video\'s width on view page'),
+        '#default_value' => variable_get('wconsumer_vimeo_video_width_on_view', '640'),
+        '#description' => t('Access token'),
+    );
+    return system_settings_form($form);
+}
+
+
+
+/**
+ * Implements hook_theme().
+ */
+function wconsumer_vimeo_theme() {
+    return array(
+        // Theme functions in wconsumer_vimeo.field.inc.
+        'wconsumer_vimeo_formatter' => array(
+            'variables' => array('file' => NULL, 'icon_directory' => NULL),
+        ),
+        'wconsumer_vimeo_file_link' => array(
+            'variables' => array('file' => NULL, 'icon_directory' => NULL),
+        ),        
+        'wconsumer_vimeo_widget' => array(
+            'render element' => 'element',
+        ),
+  );
+}

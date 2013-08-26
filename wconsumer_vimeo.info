@@ -1,0 +1,15 @@
+name = wconsumer Vimeo
+description = Module to create an integration with Vimeo.
+package = wconsumer
+dependencies[] = file
+dependencies[] = "wconsumer"
+core = 7.x
+files[] = vimeo.field.inc
+stylesheets[all][] = wconsumer_vimeo.css
+scripts[] = wconsumer_vimeo.js
+
+; Information added by alex jin on 2013-08-23
+version = "7.x-1.2"
+core = "7.x"
+project = "vimeo"
+datestamp = "1346254131"
