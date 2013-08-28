@@ -7,6 +7,13 @@ require_once dirname(__FILE__) . '/wconsumer_vimeo.field.inc';
 function wconsumer_vimeo_menu() {
 
     $items = array();
+    $items['wconsumer_vimeo/videos/page'] = array(
+        'page callback' => 'wconsumer_vimeo_pagination_callback',
+        'access callback' => 'user_access',
+        'access arguments' => array('access content'),
+        'type' => MENU_CALLBACK
+    );
+    
     $items['admin/config/fields'] = array(
         'title' => 'Fields',
         'description' => 'Fields Configuration.',
@@ -72,6 +79,9 @@ function wconsumer_vimeo_theme() {
         ),        
         'wconsumer_vimeo_widget' => array(
             'render element' => 'element',
+        ),
+        'wconsumer_vimeo_link' => array(
+            'variables' => array('file' => NULL, 'icon_directory' => NULL),
         ),
   );
 }
