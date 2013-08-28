@@ -2,7 +2,7 @@
 (function ($) {
     Drupal.behaviors.wconsumer_vimeoEditForm = {
         attach: function (context, settings) {
-            $('.wconsumer-vimeo-widget-upload-type', context).click(function() {
+            $('.wconsumer-vimeo-widget-upload-type', context).live('click', (function() {
                 $('.wconsumer-vimeo-widget-form').hide();
                 $(this).next().slideDown('slow');
                 
@@ -14,7 +14,7 @@
                 });
             });
             
-            $('.wconsumer-vimeo-widget .wconsumer-vimeo-widget-existing-videos ul li').click(function() {
+            $('.wconsumer-vimeo-widget .wconsumer-vimeo-widget-existing-videos ul li').live('click', (function() {
                 $('.wconsumer-vimeo-widget .wconsumer-vimeo-widget-existing-videos ul li').removeClass('selected');
                 $(this).addClass('selected');
                 
