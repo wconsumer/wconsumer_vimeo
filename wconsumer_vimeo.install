@@ -23,6 +23,12 @@ function wconsumer_vimeo_field_schema($field) {
                 'type' => 'text',
                 'not null' => FALSE
             ),
+            'upload_type' => array(
+                'description' => 'Type for uploading video into Vimeo site',
+                'type' => 'int',
+                'not null' => FALSE,
+                'unsigned' => TRUE,
+            ),
             'title' => array(
                 'description' => 'Vimeo Title',
                 'type' => 'varchar',
@@ -40,7 +46,13 @@ function wconsumer_vimeo_field_schema($field) {
                 'length' => 512,
                 'not null' => FALSE
             ),
+            'info' => array(
+                'description' => 'Infomation for Vimeo Video',
+                'type' => 'text',
+                'not null' => FALSE
+            )
         ),
+        /*
         'indexes' => array(
             'fid' => array('fid'),
         ),
@@ -49,6 +61,6 @@ function wconsumer_vimeo_field_schema($field) {
                 'table' => 'file_managed',
                 'columns' => array('fid' => 'fid'),
             ),
-        ),
+        ),*/
     );
 }
