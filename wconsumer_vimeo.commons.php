@@ -73,8 +73,6 @@ function wconsumer_vimeo_get_video($video_id) {
     return json_decode($rsp);
 }
 
-
-
 /**
  * Upload a video in one piece.
  *
@@ -169,6 +167,68 @@ function wconsumer_vimeo_get_oembed($video_id = 0, $width = 640) {
     $oembed = json_decode($rsp);
     
     return $oembed;
+}
+
+function wconsumer_vimeo_display_videos($videos) {
+    
+    $output = '<div id="wconsumer-vimeo-widget-videos">';
+        $output .= '<ul>';
+        foreach ($videos->videos->video as $i => $video) {
+            $output .= '<li data-video-id="'.$video->id.'" style="'.($i % 4 == 0?'clear: both':'').'"><img src="'.$video->thumbnails->thumbnail[1]->_content.'" /><br /><span>'.$video->title.'</span></li>';
+        }
+        $output .= '</ul>';
+        $output .= '<div class="clear"></div>';
+        $output .= wconsumer_vimeo_create_pagination($videos->videos->page, $videos->videos->perpage, $videos->videos->total);    
+    $output .= '</div>';// .wconsumer-vimeo-widget-videos
+    
+    return $output;
+}
+
+function wconsumer_vimeo_create_pagination($cur_page = 1, $per_page, $totals) {
+    $total_pages = intval(($totals - 1)/ $per_page) + 1;
+    $output = '<div class="wconsumer-vimeo-widget-pagination">';
+    
+    if ($total_pages != 1 && $cur_page != 1)
+        $output .= wconsumer_vimeo_get_ajax_page_link('Prev', $cur_page - 1);
+    for ($page = 1; $page <= $total_pages; $page++) {
+        $output .= wconsumer_vimeo_get_ajax_page_link($page, $page, $page == $cur_page);
+    }
+    if ($total_pages != 1 && $cur_page != $total_pages)
+        $output .= wconsumer_vimeo_get_ajax_page_link('Next', $cur_page + 1);
+    $output .= '</div>';
+    $output .= '<div class="clear"></div>';
+    
+    return $output;
+}
+
+function wconsumer_vimeo_get_ajax_page_link($link_text, $page, $selected = false) {    
+    $link = array(
+        '#type' => 'link',
+        '#title' => $link_text,
+        '#href' => 'wconsumer_vimeo/videos/page/' . $page,
+        '#ajax' => array(
+            //'callback' => 'wconsumer_vimeo_pagination_callback',
+            //'wrapper' => 'wconsumer-vimeo-widget-videos',
+            'method' => 'replace',
+            'effect' => 'fade',
+        ),
+        // Using the onload below is entirely optional; It's just included as
+        // a reminder of an easy way to add extra simple jQuery tricks.
+        '#attributes' => array(
+            //'onload' => "jQuery('something-to-hide').hide();",
+            'class' => array(($selected?'selected':'')),
+        ),
+    );
+    
+    return drupal_render($link);
+}
+
+function wconsumer_vimeo_pagination_callback($page) {
+    $commands = array();
+    $videos = wconsumer_vimeo_get_videos($page);
+    $commands[] = ajax_command_replace('#wconsumer-vimeo-widget-videos', wconsumer_vimeo_display_videos($videos));
+    $page = array('#type' => 'ajax', '#commands' => $commands);
+    ajax_deliver($page);
 }
 
 ?>
