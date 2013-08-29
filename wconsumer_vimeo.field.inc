@@ -116,9 +116,9 @@ function wconsumer_vimeo_field_presave($entity_type, $entity, $field, $instance,
                     $file = file_load($item['fid']);
                     $file_path = wconsumer_vimeo_get_file_path($file);
                     
-                    if (empty($item['vvid']) || !file_exists($file_path)) {
-                        $item['vvid'] = wconsumer_vimeo_upload_video($file_path, $item['vvid']);
-                    }
+                    //if (empty($item['vvid']) || $item['upload_type'] != $item['old_upload_type']) {
+                    $item['vvid'] = wconsumer_vimeo_upload_video($file_path);
+                    //}
                     if (!empty($item['title'])) {
                         wconsumer_vimeo_call_vimeo_api('vimeo.videos.setTitle', array('title' => $item['title'], 'video_id' => $item['vvid']));
                     }
@@ -445,16 +445,17 @@ function theme_wconsumer_vimeo_formatter($variables) {
     }
     
     $oembed = wconsumer_vimeo_get_oembed($video->vvid, variable_get('wconsumer_vimeo_video_width_on_edit'));
-    $stats = unserialize($video->info);
-    $stats = array_pop($stats);
+    $video_info = unserialize($video->info);
+    $video_info = array_pop($video_info);
     
     $output = '<div class="wconsumer-vimeo-view">';
-        $output .= html_entity_decode($oembed->html);    
+        $output .= html_entity_decode($oembed->html);
+        $output .= '<p>'.$video_info->description.'</p>';
         $output .= '<div class="wconsumer-vimeo-stats">';
             $output .= '<div class="wconsumer-vimeo-stats">';
-            $output .= '<div class="wconsumer-vimeo-stats-views"><strong>Plays: </strong>'.$stats->stats_number_of_plays.'</div>';
-            $output .= '<div class="wconsumer-vimeo-stats-likes"><strong>Likes: </strong>'.$stats->stats_number_of_likes.'</div>';
-            $output .= '<div class="wconsumer-vimeo-stats-comments"><strong>Comments: </strong>'.$stats->stats_number_of_comments.'</div>';
+            $output .= '<div class="wconsumer-vimeo-stats-views"><strong>Plays: </strong>'.$video_info->stats_number_of_plays.'</div>';
+            $output .= '<div class="wconsumer-vimeo-stats-likes"><strong>Likes: </strong>'.$video_info->stats_number_of_likes.'</div>';
+            $output .= '<div class="wconsumer-vimeo-stats-comments"><strong>Comments: </strong>'.$video_info->stats_number_of_comments.'</div>';
             $output .= '</div>'; // .wconsumer-vimeo-stats
     $output .= '</div>'; // .wconsumer-vimeo-view
     
