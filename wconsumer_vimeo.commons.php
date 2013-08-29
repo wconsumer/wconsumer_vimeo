@@ -101,7 +101,7 @@ function wconsumer_vimeo_upload_video($file_path, $replace_id = null, $use_multi
     // Get an upload ticket
     $params = array();
 
-    if ($replace_id) {
+    if (!empty($replace_id)) {
         $params['video_id'] = $replace_id;
     }
     
