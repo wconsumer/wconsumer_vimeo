@@ -116,9 +116,8 @@ function wconsumer_vimeo_field_presave($entity_type, $entity, $field, $instance,
                     $file = file_load($item['fid']);
                     $file_path = wconsumer_vimeo_get_file_path($file);
                     
-                    //if (empty($item['vvid']) || $item['upload_type'] != $item['old_upload_type']) {
                     $item['vvid'] = wconsumer_vimeo_upload_video($file_path);
-                    //}
+                    
                     if (!empty($item['title'])) {
                         wconsumer_vimeo_call_vimeo_api('vimeo.videos.setTitle', array('title' => $item['title'], 'video_id' => $item['vvid']));
                     }
@@ -372,6 +371,11 @@ function theme_wconsumer_vimeo_widget($variables) {
         // Capture Video
         $output .= '<div id="wconsumer-vimeo-widget-capture-video" class="wconsumer-vimeo-widget-upload-type" data-type="3"><span>3.</span><strong>Capture Video</strong></div>';
         $output .= '<div class="wconsumer-vimeo-widget-capture-video wconsumer-vimeo-widget-form" style="display:'.($values['upload_type']==3?'block':'none').'">';
+            $output .= '<video autoplay="" id="wconsumer-vimeo-widget-videostream" class="wconsumer-vimeo-widget-videostream"></video>';
+            $output .= '<div class="wconsumer-vimeo-widget-capture-buttons">';
+                //$output .= '<input type="file" name="video" accept="video/*" capture />';
+                $output .= '<a id="wconsumer-vimeo-widget-capture-button" href="#" class="button">Capture video</a><a id="wconsumer-vimeo-widget-capture-stop-button" href="#" class="button">Stop</a>';
+            $output .= '</div>';
         $output .= '</div>';// .wconsumer-vimeo-widget-capture-video
         //$output .= '<div class="clear"></div>';
     $output .= '</div>';// .wconsumer-vimeo-widget-upload-form
