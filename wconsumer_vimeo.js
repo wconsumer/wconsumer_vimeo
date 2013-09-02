@@ -25,6 +25,43 @@
                         $(this).val(instance.attr('data-video-id'));
                 });
             });
+            
+            function onFailSoHard(e){
+                if(e.code==1){
+                    alert('User denied access to their camera');
+                }else{
+                    alert('getUserMedia() not supported in your browser.');
+                }
+            }
+                
+            var video = document.querySelector('#wconsumer-vimeo-widget-videostream');
+            var button=document.querySelector('#wconsumer-vimeo-widget-capture-button');
+            var localMediaStream=null;
+            
+            $('#wconsumer-vimeo-widget-capture-button').live('click', function(e){
+                if(navigator.getUserMedia){
+                    navigator.getUserMedia('video',function(stream){
+                        video.src=stream;
+                        video.controls=true;
+                        localMediaStream=stream;
+                    },onFailSoHard);
+                } else if(navigator.webkitGetUserMedia){
+                    navigator.webkitGetUserMedia({video:true}, function(stream){
+                        video.src=window.webkitURL.createObjectURL(stream);
+                        video.controls=true;
+                        localMediaStream=stream;
+                    },onFailSoHard);
+                }else{
+                    onFailSoHard({target:video});
+                }
+                return false;
+            });
+            $('#wconsumer-vimeo-widget-capture-stop-button').live('click',function(e){
+                video.pause();
+                localMediaStream.stop();
+                return false;
+            });
+        
         }
     };
 
