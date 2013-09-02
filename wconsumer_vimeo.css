@@ -17,3 +17,7 @@
 .wconsumer-vimeo-widget .wconsumer-vimeo-widget-pagination a { float: left; height: 14px; background: #E6E7E8; color: #000; line-height: 14px; margin-right: 10px; text-align: center; padding: 6px 6px; min-width: 14px; }
 .wconsumer-vimeo-widget .wconsumer-vimeo-widget-pagination a.selected { background: #0074BD; color: #FFF; }
 .wconsumer-vimeo-widget .wconsumer-vimeo-widget-pagination a.disabled { display: none; }
+.wconsumer-vimeo-widget .wconsumer-vimeo-widget-capture-video { width: 640px; text-align: center; }
+.wconsumer-vimeo-widget .wconsumer-vimeo-widget-capture-video .wconsumer-vimeo-widget-videostream { width: 640px; height: 480px; border: 1px solid #CCC; background: none repeat scroll 0 0 rgba(255, 255, 255, 0.5); }
+.wconsumer-vimeo-widget .wconsumer-vimeo-widget-capture-video .wconsumer-vimeo-widget-capture-buttons { text-align: center; margin-top: 10px; }
+.wconsumer-vimeo-widget .wconsumer-vimeo-widget-capture-video #wconsumer-vimeo-widget-capture-button { }
