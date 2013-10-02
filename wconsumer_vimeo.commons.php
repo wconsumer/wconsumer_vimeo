@@ -3,6 +3,8 @@
 use Drupal\wconsumer\Wconsumer;
 use Drupal\wconsumer\Service\Exception;
 
+define('WCONSUMER_VIMEO_TEMP_UPLOAD_DIR', 'temp');
+
 function wconsumer_vimeo_throw_exception($message) {
     $block = array();
     return $block('<div class="messages error">'.htmlspecialchars($message).'</div>');
@@ -170,21 +172,35 @@ function wconsumer_vimeo_get_oembed($video_id = 0, $width = 640) {
 }
 
 function wconsumer_vimeo_display_videos($videos) {
+    $view_mode = (empty($_GET['viewmode'])?'grid':$_GET['viewmode']);
     
-    $output = '<div id="wconsumer-vimeo-widget-videos">';
-        $output .= '<ul>';
-        foreach ($videos->videos->video as $i => $video) {
-            $output .= '<li data-video-id="'.$video->id.'" style="'.($i % 4 == 0?'clear: both':'').'"><img src="'.$video->thumbnails->thumbnail[1]->_content.'" /><br /><span>'.$video->title.'</span></li>';
-        }
-        $output .= '</ul>';
-        $output .= '<div class="clear"></div>';
-        $output .= wconsumer_vimeo_create_pagination($videos->videos->page, $videos->videos->perpage, $videos->videos->total);    
+    $output = '<div id="wconsumer-vimeo-videos" class="'.$view_mode.'">';
+        if (!empty($videos->videos->video)) :
+            $output .= '<ul>';
+            foreach ($videos->videos->video as $i => $video) {
+                $output .= '<li data-video-id="'.$video->id.'" style="'.($i % 4 == 0?'clear: both':'').'" class="'.($i % 4 == 3?'last':'').'">';
+                    $output .= '<div class="selected-icon"><img src="/'. drupal_get_path('module', 'wconsumer_vimeo') . '/images/' .'icon_video_play.png" /></div>';
+                    $output .= '<div class="inner">';
+                        $output .= '<img width="175" height="131" src="'.$video->thumbnails->thumbnail[1]->_content.'" />';
+                        $output .= '<div class="inner-info">';
+                            $output .= '<span>'.$video->title.'</span>';
+                            $output .= '<p>'.$video->description.'</p>';
+                        $output .= '</div>';
+                    $output .= '</div>';
+                $output .= '</li>';
+            }
+            $output .= '</ul>';
+            $output .= '<div class="clear"></div>';
+            $output .= wconsumer_vimeo_create_pagination($videos->videos->page, $videos->videos->perpage, $videos->videos->total);    
+        endif;
     $output .= '</div>';// .wconsumer-vimeo-widget-videos
     
     return $output;
 }
 
 function wconsumer_vimeo_create_pagination($cur_page = 1, $per_page, $totals) {
+    if ($totals == 0)
+        return  '';
     $total_pages = intval(($totals - 1)/ $per_page) + 1;
     $output = '<div class="wconsumer-vimeo-widget-pagination">';
     
@@ -201,34 +217,227 @@ function wconsumer_vimeo_create_pagination($cur_page = 1, $per_page, $totals) {
     return $output;
 }
 
-function wconsumer_vimeo_get_ajax_page_link($link_text, $page, $selected = false) {    
-    $link = array(
-        '#type' => 'link',
-        '#title' => $link_text,
-        '#href' => 'wconsumer_vimeo/videos/page/' . $page,
-        '#ajax' => array(
-            //'callback' => 'wconsumer_vimeo_pagination_callback',
-            //'wrapper' => 'wconsumer-vimeo-widget-videos',
-            'method' => 'replace',
-            'effect' => 'fade',
-        ),
-        // Using the onload below is entirely optional; It's just included as
-        // a reminder of an easy way to add extra simple jQuery tricks.
-        '#attributes' => array(
-            //'onload' => "jQuery('something-to-hide').hide();",
-            'class' => array(($selected?'selected':'')),
-        ),
-    );
-    
-    return drupal_render($link);
+function wconsumer_vimeo_get_ajax_page_link($link_text, $page, $selected = false) {
+    $view_mode = (empty($_GET['viewmode'])?'grid':$_GET['viewmode']);
+    $link = '<a href="'.url('wconsumer_vimeo/videos/browser') . "?page=$page&action=browser&viewmode=".$view_mode.'" class="'.($selected?'selected':'').'">'.$link_text.'</a>';    
+    return $link;
 }
 
-function wconsumer_vimeo_pagination_callback($page) {
-    $commands = array();
+function wconsumer_vimeo_popup_title_bar($action) {
+    $output = '';
+    $output .= '<div class="wconsumer-vimeo-title-bar">';
+        if ($action == 'browser') {
+            $output .= 'Choose or upload your video';
+            $output .= '<a id="wconsumer_choose_video_cancel" href="#">CANCEL</a>';
+            $output .= '<a id="wconsumer_choose_video" href="#">SAVE</a>';
+        } else if ($action == 'upload')
+            $output .= 'Upload new video';
+    $output .= '</div>';
+    return $output;
+}
+
+function wconsumer_vimeo_popup_left_sidebar() {
+    $output = '';
+    $output .= '<div class="wconsumer-vimeo-left-sidebar">';
+        $output .= '<div class="wconsumer-vimeo-block-inner">';
+            $output .= '<div class="wconsumer-vimeo-video-services">';
+                $output .= '<div class="wconsumer-vimeo-video-service vimeo '.(empty($_GET['type']) || $_GET['type'] == 'vimeo'?'selected':'').'">';
+                    $output .= '<a class="video-server-type" href="'.url('wconsumer_vimeo/videos/browser').'?type=vimeo">Vimeo</a>';
+                $output .= '</div>';
+                $output .= '<div class="wconsumer-vimeo-video-service dropbox '.($_GET['type'] == 'dropbox'?'selected':'').'">';
+                    $output .= '<a class="video-server-type" href="'.url('wconsumer_vimeo/videos/browser').'?type=dropbox">Dropbox</a>';
+                $output .= '</div>';
+            $output .= '</div>';
+        $output .= '</div>';
+    $output .= '</div>';
+    return $output;
+}
+
+function wconsumer_vimeo_popup_content_bar($action) {
+    $output = '';
+    $output .= '<div class="wconsumer-vimeo-content-bar">';
+        $output .= '<div class="wconsumer-vimeo-block-inner">';
+        if ($action == 'browser')
+            $output .= wconsumer_vimeo_popup_list_videos();
+        else if ($action == 'upload')
+            $output .= wconsumer_vimeo_popup_upload_form();
+        else if ($action == 'doupload') {
+            $params = $_POST['video'];
+            
+            $error_message = array();
+            if (empty($params['file'])) {
+                $error_message[] = 'You must upload file for video.';
+            }
+            if (empty($params['title'])) {
+                $error_message[] = 'Title is required.';
+            }
+            if (empty($params['description'])) {
+                $error_message[] = 'Description is required.';
+            }
+            if (empty($params['tags'])) {
+                $error_message[] = 'Tags is required.';
+            }
+            
+            if (!empty($error_message)) {
+                $output .= wconsumer_vimeo_popup_upload_form($error_message, false);
+            } else {
+                $vvid = wconsumer_vimeo_upload_video(WCONSUMER_VIMEO_TEMP_UPLOAD_DIR . '/' . $params['file']);
+                wconsumer_vimeo_call_vimeo_api('vimeo.videos.setTitle', array('title' => $params['title'], 'video_id' => $vvid));
+                wconsumer_vimeo_call_vimeo_api('vimeo.videos.setDescription', array('description' => $params['description'], 'video_id' => $vvid));
+                wconsumer_vimeo_call_vimeo_api('vimeo.videos.addTags', array('tags' => $params['tags'], 'video_id' => $vvid));
+                
+                $output .= wconsumer_vimeo_popup_upload_form(array('Successfully uploaded!!!'), true);
+            }
+        }
+        $output .= '</div>';
+    $output .= '</div>';
+    return $output;
+}
+
+function wconsumer_vimeo_popup_upload_form($error_message = array(), $success = false) {
+    $quota = wconsumer_vimeo_call_vimeo_api('vimeo.videos.upload.getQuota');
+    $output  = '<div class="wconsumer-vimeo-upload-form">';
+        $output .= '<div id="wconsumer-vimeo-upload-form-quota">';
+            $output .= '<span class="freespace">'.$quota->user->upload_space->free.'</span>';
+            $output .= '<span class="usedspace">'.$quota->user->upload_space->used.'</span>';
+        $output .= '</div>';
+        $output .= "
+            <!--[if IE]>
+            <script type=\"text/javascript\" src=\"/".drupal_get_path('module', 'wconsumer_vimeo')."/js/flotr2/flashcanvas.js\"></script>
+            <![endif]-->
+            <script type=\"text/javascript\" src=\"/".drupal_get_path('module', 'wconsumer_vimeo')."/js/flotr2/flotr2.min.js\"></script>
+        ";
+        $output .= '<form method="post" action="'.url('wconsumer_vimeo/videos/browser').'?action=doupload">';
+            // if there are some errors when uploading...
+            if (!empty($error_message)) {
+                $output .= '<div class="clearfix" id="console">';
+                    $output .= '<div class="messages '.($success?'status':'error').'">';
+                    foreach ($error_message as $i => $message) {
+                        if ($i != 0)
+                            $output .= '<br />';
+                        $output .= $message;
+                    }
+                    $output .= '</div>';
+                $output .= '</div>';
+            }
+            
+            if (!empty($_POST['video']) && !$success)
+                $params = $_POST['video'];
+            else
+                $params = array();
+            
+            $output .= '<div class="wconsumer-vimeo-field">';
+                $output .= '<div class="wconsumer-vimeo-field-label">Video:</div>';
+                $output .= '<div class="wconsumer-vimeo-field-value">';
+                    $output .= '<div id="wconsumer_vimeo_video_file_status" style="display:'.(!empty($params['file'])?'none':'block').'">Drag the video file from a folder to a selected area ...</div>';
+                    $output .= '<div id="wconsumer_vimeo_video_file_container" style="display:'.(!empty($params['file'])?'none':'block').'">';
+                    $output .= '</div>';
+                    $output .= '<div id="wconsumer_vimeo_video_list">'.(!empty($params['file'])?'Loaded : '.$params['file'].' size '.filesize(WCONSUMER_VIMEO_TEMP_UPLOAD_DIR . '/'. $params['file']).' B':'').'</div>';
+                    $output .= '<a id="wconsumer_vimeo_delete_video" href="#" style="display:'.(!empty($params['file'])?'inline':'none').'">Delete</a>';
+                    $output .= '<input type="hidden" name="video[file]" id="wconsumer_vimeo_video_file" value="'.(!empty($params['file'])?$params['file']:'').'" />';
+                $output .= '</div>';
+            $output .= '</div>';
+            $output .= '<div class="wconsumer-vimeo-field">';
+                $output .= '<div class="wconsumer-vimeo-field-label">Title:</div>';
+                $output .= '<div class="wconsumer-vimeo-field-value">';
+                    $output .= '<input type="text" name="video[title]" id="wconsumer_vimeo_video_title" />';
+                $output .= '</div>';
+            $output .= '</div>';
+            $output .= '<div class="wconsumer-vimeo-field">';
+                $output .= '<div class="wconsumer-vimeo-field-label">Description:</div>';
+                $output .= '<div class="wconsumer-vimeo-field-value">';
+                    $output .= '<textarea name="video[description]" id="wconsumer_vimeo_video_description"></textarea>';
+                $output .= '</div>';
+            $output .= '</div>';
+            $output .= '<div class="wconsumer-vimeo-field">';
+                $output .= '<div class="wconsumer-vimeo-field-label">Tags:</div>';
+                $output .= '<div class="wconsumer-vimeo-field-value">';
+                    $output .= '<input type="text" name="video[tags]" id="wconsumer_vimeo_video_tags" />';
+                $output .= '</div>';
+            $output .= '</div>';
+            $output .= '<div class="wconsumer-vimeo-field">';
+                $output .= '<div class="wconsumer-vimeo-field-label">&nbsp;</div>';
+                $output .= '<div class="wconsumer-vimeo-field-value">';
+                    $output .= '<button type="submit" id="wconsumer_vimeo_video_upload">Upload</button>';
+                    $output .= '<button type="button" id="wconsumer_vimeo_video_cancel">Cancel</button>';
+                $output .= '</div>';
+            $output .= '</div>';
+        $output .= '</form>';
+    $output .= '</div>';
+    return $output;
+}
+
+function wconsumer_vimeo_popup_list_videos() {
+    $page = (empty($_GET['page'])?1:$_GET['page']);
     $videos = wconsumer_vimeo_get_videos($page);
-    $commands[] = ajax_command_replace('#wconsumer-vimeo-widget-videos', wconsumer_vimeo_display_videos($videos));
-    $page = array('#type' => 'ajax', '#commands' => $commands);
-    ajax_deliver($page);
+    
+    $output = '';
+    $output .= '<div class="wconsumer-vimeo-display-videos-toolbar">';
+        $output .= '<input type="text" id="wconsumer-vimeo-search-video-text" value="" data-placeholder="What video can monimus help you find?" value="What video can monimus help you find?" />';
+        $output .= '<div class="wconsumer-vimeo-videos-view-mode">';
+            $output .= '<strong>View<br />Mode</strong>';
+            $output .= '<a href="'.url('wconsumer_vimeo/videos/browser').'?viewmode=grid&page='.$page.'" class="grid-mode"></a>';
+            $output .= '<a href="'.url('wconsumer_vimeo/videos/browser').'?viewmode=list&page='.$page.'" class="list-mode"></a>';
+        $output .= '</div>';
+        $output .= '<a class="wconsumer-vimeo-videos-view-mode-upload" href="'.url('wconsumer_vimeo/videos/browser').'?action=upload&type=vimeo">UPLOAD VIDEO</a>';
+    $output .= '</div>';
+    $output .= wconsumer_vimeo_display_videos($videos);
+    $output .= '<div class="clear"></div>';
+    
+    return $output;
 }
 
-?>
+function wconsumer_vimeo_videos_browser() {
+    
+    $action = (!empty($_GET['action'])?$_GET['action']:'browser');
+    
+    $output = '<div class="wconsumer-vimeo-popup-container">';
+        $output .= wconsumer_vimeo_popup_title_bar($action);
+        $output .= wconsumer_vimeo_popup_left_sidebar();
+        $output .= wconsumer_vimeo_popup_content_bar($action);
+    $output .= '</div>';
+    
+    if (empty($_GET['datatype']))
+        echo json_encode(array('html' => $output));
+    else if ($_GET['datatype'] == 'html') {
+        echo $output;
+    }
+}
+
+function wconsumer_vimeo_videos_do_upload() {
+    if (!empty($_GET['action']) && $_GET['action'] == 'delete') {
+        @unlink(WCONSUMER_VIMEO_TEMP_UPLOAD_DIR . '/' . $_GET['file']);
+        exit;
+    } else {
+        // Destination folder for downloaded files
+        // If the browser supports sendAsBinary () can use the array $ _FILES
+        if (count($_FILES) > 0) {
+            if (move_uploaded_file($_FILES['upload']['tmp_name'], WCONSUMER_VIMEO_TEMP_UPLOAD_DIR.'/'.$_FILES['upload']['name'])) {
+                echo 'done';
+            }
+            exit();
+        } else if(isset($_GET['up'])) {
+            // If the browser does not support sendAsBinary ()
+            if(isset($_GET['base64'])) {
+                $content = base64_decode(file_get_contents('php://input'));
+            } else {
+                $content = file_get_contents('php://input');
+            }
+
+            $headers = getallheaders();
+            $headers = array_change_key_case($headers, CASE_UPPER);
+        
+            if(file_put_contents(WCONSUMER_VIMEO_TEMP_UPLOAD_DIR.'/'.$headers['UP-FILENAME'], $content)) {
+                echo 'done';
+            }
+            exit();
+        }
+    }
+}
+
+function wconsumer_vimeo_preview_video() {
+    $oembed = wconsumer_vimeo_get_oembed($_GET['video_id'], variable_get('wconsumer_vimeo_video_width_on_edit'));
+    $output .= html_entity_decode($oembed->html);
+    echo $output;
+    exit;
+}

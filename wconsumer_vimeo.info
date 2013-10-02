@@ -1,12 +1,14 @@
 name = wconsumer Vimeo
 description = Module to create an integration with Vimeo.
 package = wconsumer
-dependencies[] = file
 dependencies[] = "wconsumer"
 core = 7.x
-files[] = vimeo.field.inc
+files[] = wconsumer_vimeo.field.inc
 stylesheets[all][] = wconsumer_vimeo.css
+stylesheets[all][] = js/jquery.colorbox/colorbox.css
 scripts[] = wconsumer_vimeo.js
+scripts[] = js/jquery.colorbox/jquery.colorbox-min.js
+scripts[] = js/html5uploader/html5uploader.js
 
 ; Information added by alex jin on 2013-08-23
 version = "7.x-1.2"

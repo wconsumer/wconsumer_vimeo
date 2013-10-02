@@ -7,12 +7,6 @@ require_once dirname(__FILE__) . '/wconsumer_vimeo.field.inc';
 function wconsumer_vimeo_menu() {
 
     $items = array();
-    $items['wconsumer_vimeo/videos/page'] = array(
-        'page callback' => 'wconsumer_vimeo_pagination_callback',
-        'access callback' => 'user_access',
-        'access arguments' => array('access content'),
-        'type' => MENU_CALLBACK
-    );
     
     $items['admin/config/fields'] = array(
         'title' => 'Fields',
@@ -28,6 +22,27 @@ function wconsumer_vimeo_menu() {
         'page callback' => 'drupal_get_form',
         'page arguments' => array('wconsumer_vimeo_admin_settings'),
         'access arguments' => array('administer wconsumer_vimeo settings')
+    );
+    
+    $items['wconsumer_vimeo/videos/browser'] = array(
+        'page callback' => 'wconsumer_vimeo_videos_browser',
+        'access callback' => 'user_access',
+        'access arguments' => array('access content'),
+        'type' => MENU_CALLBACK
+    );
+    
+    $items['wconsumer_vimeo/videos/douploadfile'] = array(
+        'page callback' => 'wconsumer_vimeo_videos_do_upload',
+        'access callback' => 'user_access',
+        'access arguments' => array('access content'),
+        'type' => MENU_CALLBACK
+    );
+    
+    $items['wconsumer_vimeo/videos/preview'] = array(
+        'page callback' => 'wconsumer_vimeo_preview_video',
+        'access callback' => 'user_access',
+        'access arguments' => array('access content'),
+        'type' => MENU_CALLBACK
     );
     
     return $items;
@@ -63,8 +78,6 @@ function wconsumer_vimeo_admin_settings() {
     return system_settings_form($form);
 }
 
-
-
 /**
  * Implements hook_theme().
  */
@@ -72,7 +85,7 @@ function wconsumer_vimeo_theme() {
     return array(
         // Theme functions in wconsumer_vimeo.field.inc.
         'wconsumer_vimeo_formatter' => array(
-            'variables' => array('file' => NULL, 'icon_directory' => NULL),
+            'variables' => array('video' => NULL),
         ),
         'wconsumer_vimeo_file_link' => array(
             'variables' => array('file' => NULL, 'icon_directory' => NULL),

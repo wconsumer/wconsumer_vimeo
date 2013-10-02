@@ -15,7 +15,7 @@ function wconsumer_vimeo_field_info() {
     return array(
         'wconsumer_vimeo' => array(
             'label' => t('Wconsumer Vimeo'),
-            'description' => t('This field stores the ID of an image file as an integer value.'),
+            'description' => t('This field stores the ID of video id.'),
             'settings' => array(
                 'uri_scheme' => variable_get('file_default_scheme', 'public'),
                 'display_field' => 0,
@@ -58,7 +58,7 @@ function wconsumer_vimeo_field_instance_settings_form($field, $instance) {
  */
 function wconsumer_vimeo_field_load($entity_type, $entities, $field, $instances, $langcode, &$items, $age) {
     
-    $fids = array();
+    /*$fids = array();
     foreach ($entities as $id => $entity) {
         // Load the files from the files table.
         foreach ($items[$id] as $delta => $item) {
@@ -83,7 +83,7 @@ function wconsumer_vimeo_field_load($entity_type, $entities, $field, $instances,
                 }
             }
         }
-    }
+    }*/
 }
 
 /**
@@ -108,47 +108,9 @@ function wconsumer_vimeo_field_prepare_view($entity_type, $entities, $field, $in
  */
 function wconsumer_vimeo_field_presave($entity_type, $entity, $field, $instance, $langcode, &$items) {
     foreach ($items as &$item) {
-        try {
-            if ($item['upload_type'] == 1) {
-                if (!empty($item['fid'])) {
-                    file_field_presave($entity_type, $entity, $field, $instance, $langcode, $items);
-                    
-                    $file = file_load($item['fid']);
-                    $file_path = wconsumer_vimeo_get_file_path($file);
-                    
-                    $item['vvid'] = wconsumer_vimeo_upload_video($file_path);
-                    
-                    if (!empty($item['title'])) {
-                        wconsumer_vimeo_call_vimeo_api('vimeo.videos.setTitle', array('title' => $item['title'], 'video_id' => $item['vvid']));
-                    }
-                    
-                    if (!empty($item['description'])) {
-                        wconsumer_vimeo_call_vimeo_api('vimeo.videos.setDescription', array('description' => $item['description'], 'video_id' => $item['vvid']));
-                    }
-                    
-                    if (!empty($item['tags'])) {
-                        wconsumer_vimeo_call_vimeo_api('vimeo.videos.addTags', array('tags' => $item['tags'], 'video_id' => $item['vvid']));
-                    }
-                    
-                    file_delete($file);
-                    @unlink($file_path);
-                    unset($item['fid']);
-                } else {
-                    $item['vvid'] = $item['old_vvid'];
-                }
-            } else if ($item['upload_type'] == 2) { // Choose video from vimeo
-                if (empty($item['vvid'])) {
-                    $item['vvid'] = $item['old_vvid'];
-                }
-            }
-            
+        try {            
             $video_info = wconsumer_vimeo_get_video($item['vvid']);
-            $item['info'] = serialize($video_info);
-            
-            unset($item['old_upload_type']);
-            unset($item['old_vvid']);
-            unset($item['old_fid']);
-            
+            $item['info'] = serialize($video_info);            
         }
         catch (Exception\NotLoggedInUser $e) {
             throw new \Exception\NotLoggedInUser("Please sign up or log in to upload video");
@@ -197,7 +159,8 @@ function wconsumer_vimeo_field_delete_revision($entity_type, $entity, $field, $i
  * Implements hook_field_is_empty().
  */
 function wconsumer_vimeo_field_is_empty($item, $field) {
-    return (empty($item['fid']) && empty($item['vvid']));
+    //return (empty($item['fid']) && empty($item['vvid']));
+    return empty($item['vvid']);
 }
 
 /**
@@ -237,11 +200,10 @@ function wconsumer_vimeo_field_widget_settings_form($field, $instance) {
  */
 function wconsumer_vimeo_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
 
-    // Add display_field setting to field because file_field_widget_form() assumes it is set.
-    $field['settings']['display_field'] = 0;
-
-    $elements = file_field_widget_form($form, $form_state, $field, $instance, $langcode, $items, $delta, $element);
-    
+    if (count($items) != 0)
+        $element['#value'] = $items[0];
+        
+    $elements = array($element);
     foreach (element_children($elements) as $delta) {
         $elements[$delta]['#process'][] = 'wconsumer_vimeo_field_widget_process';
     }
@@ -255,71 +217,24 @@ function wconsumer_vimeo_field_widget_form(&$form, &$form_state, $field, $instan
  * Expands the vimeo_vimeo type to include the alt and title fields.
  */
 function wconsumer_vimeo_field_widget_process($element, &$form_state, $form) {
+    
     $element['#attached']['css'][] = drupal_get_path('module', 'wconsumer_vimeo') . '/wconsumer_vimeo.css';
     $element['#attached']['js'][] = drupal_get_path('module', 'wconsumer_vimeo') . '/wconsumer_vimeo.js';
     
-    $item = $element['#value'];
-    $element = file_field_widget_process($element, $form_state, $form);
+    // add jquery colorbox library
+    $element['#attached']['css'][] = drupal_get_path('module', 'wconsumer_vimeo') . '/js/jquery.colorbox/colorbox.css';
+    $element['#attached']['js'][] = drupal_get_path('module', 'wconsumer_vimeo') . '/js/jquery.colorbox/jquery.colorbox-min.js';
     
-    foreach (array('upload_button', 'remove_button') as $key) {
-        $element[$key]['#submit'][] = 'wconsumer_vimeo_field_widget_submit';
-        $element[$key]['#limit_validation_errors'] = array(array_slice($element['#parents'], 0, -1));
-    }
-
-    // Add the additional alt and title fields.
-    $element['title'] = array(
-        '#title' => t('Video Title'),
-        '#type' => 'textfield',
-        '#default_value' => isset($item['title']) ? $item['title'] : '',
-        '#description' => t('Videos are more interesting when they have creative titles. We know you can do better than "My Video."'),
-        '#maxlength' => 512,
-        '#weight' => -2,
-        '#access' => (bool) $item['fid']
-    );
+    $element['#attached']['js'][] = drupal_get_path('module', 'wconsumer_vimeo') . '/js/html5uploader/html5uploader.js';
     
-    $element['description'] = array(
-        '#type' => 'textarea',
-        '#title' => t('Video Description'),
-        '#default_value' => isset($item['description']) ? $item['description'] : '',
-        '#description' => t('Tell the story behind your video, and how you were involved in making it. (No HTML, but links are OK.)'),
-        '#maxlength' => 1024,
-        '#weight' => -1,
-        '#access' => (bool) $item['fid']
-    );
-    
-    $element['tags'] = array(
-        '#type' => 'textfield',
-        '#title' => t('Video Tags'),
-        '#default_value' => isset($item['tags']) ? $item['tags'] : '',
-        '#description' => t('Add some relevant keywords to make your video easier to find. (Separate your tags with commas, please.)'),
-        '#maxlength' => 1024,
-        '#weight' => -1,
-        '#access' => (bool) $item['fid']
-    );
+    if (!empty($element['#value']))
+        $item = $element['#value'];
+    else
+        $item = array();
     
     $element['vvid'] = array(
         '#type' => 'hidden',
         '#default_value' => isset($item['vvid']) ? $item['vvid'] : '',
-    );
-    
-    $element['upload_type'] = array(
-        '#type' => 'hidden',
-        '#default_value' => isset($item['upload_type']) ? $item['upload_type'] : 1,
-    );
-    
-    $element['old_upload_type'] = array(
-        '#type' => 'hidden',
-        '#default_value' => isset($item['upload_type']) ? $item['upload_type'] : 1,
-    );
-    
-    $element['old_vvid'] = array(
-        '#type' => 'hidden',
-        '#default_value' => isset($item['vvid']) ? $item['vvid'] : 1,
-    );
-    
-    $element['old_fid'] = array(
-        '#type' => 'hidden',
-        '#default_value' => isset($item['fid']) ? $item['fid'] : 0xffffffff,
     );
     
     $element['#theme'] = 'wconsumer_vimeo_widget';
@@ -338,48 +253,29 @@ function wconsumer_vimeo_field_widget_process($element, &$form_state, $form) {
  */
 function theme_wconsumer_vimeo_widget($variables) {
     $element = $variables['element'];
-    $values = $element['#value'];
+    
+    if (!empty($element['#value']))
+        $values = $element['#value'];
+    else
+        $values = array();
     
     $videos = wconsumer_vimeo_get_videos();
     
     $output = '';
-    $output .= '<div class="wconsumer-vimeo-widget form-managed-file clearfix">';    
+    $output .= '<div class="wconsumer-vimeo-widget">';
+        $output .= '<div class="wconsumer-vimeo-browser-button">';
+            $output .= '<a href="'.url('wconsumer_vimeo/videos/browser').'?datatype=html" class="button">Choose or Upload video</a>';
+        $output .= '</div>';// .wconsumer-vimeo-browser-button
+        $output .= '<div class="wconsumer-vimeo-view-video">';
     if (!empty($values['vvid'])) {
         $video_id = $values['vvid'];
-        $output .= '<div class="wconsumer-vimeo-view-video">';
         $oembed = wconsumer_vimeo_get_oembed($video_id, variable_get('wconsumer_vimeo_video_width_on_edit'));
         $output .= html_entity_decode($oembed->html);
-        $output .= '</div>';// .wconsumer-vimeo-view-video
     }
-    
-    $values['upload_type'] = (empty($values['upload_type'])?1:$values['upload_type']);
-    
-    $output .= '<div class="wconsumer-vimeo-widget-upload-form">';
-        // Upload Video from Local
-        $output .= '<div id="wconsumer-vimeo-widget-upload-videos" class="wconsumer-vimeo-widget-upload-type" data-type="1"><span>1.</span><strong>Upload Video from Local</strong></div>';
-        $output .= '<div class="wconsumer-vimeo-widget-upload-videos wconsumer-vimeo-widget-form" style="display:'.($values['upload_type']==1?'block':'none').'">';
+        $output .= '</div>';// .wconsumer-vimeo-view-video
+        $output .= '<div id="wconsumer-vimeo-field-video-id">';
             $output .= drupal_render_children($element);
-        $output .= '</div>';// .wconsumer-vimeo-widget-upload-videos
-        
-        // Choose Video from Vimeo Site
-        $output .= '<div id="wconsumer-vimeo-widget-existing-videos" class="wconsumer-vimeo-widget-upload-type" data-type="2"><span>2.</span><strong>Choose Video from Vimeo Site</strong></div>';
-        $output .= '<div class="wconsumer-vimeo-widget-existing-videos wconsumer-vimeo-widget-form" style="display:'.($values['upload_type']==2?'block':'none').'">';
-            $output .= '<strong>Please choose your videos below.</strong>';
-            $output .= wconsumer_vimeo_display_videos($videos);
-        $output .= '</div>';// .wconsumer-vimeo-widget-existing-videos
-        
-        // Capture Video
-        $output .= '<div id="wconsumer-vimeo-widget-capture-video" class="wconsumer-vimeo-widget-upload-type" data-type="3"><span>3.</span><strong>Capture Video</strong></div>';
-        $output .= '<div class="wconsumer-vimeo-widget-capture-video wconsumer-vimeo-widget-form" style="display:'.($values['upload_type']==3?'block':'none').'">';
-            $output .= '<video autoplay="" id="wconsumer-vimeo-widget-videostream" class="wconsumer-vimeo-widget-videostream"></video>';
-            $output .= '<div class="wconsumer-vimeo-widget-capture-buttons">';
-                //$output .= '<input type="file" name="video" accept="video/*" capture />';
-                $output .= '<a id="wconsumer-vimeo-widget-capture-button" href="#" class="button">Capture video</a><a id="wconsumer-vimeo-widget-capture-stop-button" href="#" class="button">Stop</a>';
-            $output .= '</div>';
-        $output .= '</div>';// .wconsumer-vimeo-widget-capture-video
-        //$output .= '<div class="clear"></div>';
-    $output .= '</div>';// .wconsumer-vimeo-widget-upload-form
-    
+        $output .= '</div>';
     $output .= '</div>';// .wconsumer-vimeo-widget
     
     return $output;
@@ -421,7 +317,7 @@ function wconsumer_vimeo_field_formatter_view($entity_type, $entity, $field, $in
     foreach ($items as $delta => $item) {
         $element[$delta] = array(
             '#theme' => 'wconsumer_vimeo_formatter',
-            '#file' => (object) $item,
+            '#video' => (object) $item,
             '#path' => '',
         );
     }
@@ -442,13 +338,13 @@ function wconsumer_vimeo_field_formatter_view($entity_type, $entity, $field, $in
  * @ingroup themeable
  */
 function theme_wconsumer_vimeo_formatter($variables) {
-    $video = $variables['file'];
+    $video = $variables['video'];
     
     if (empty($video->vvid)) {
         return theme_wconsumer_vimeo_file_link($variables);
     }
     
-    $oembed = wconsumer_vimeo_get_oembed($video->vvid, variable_get('wconsumer_vimeo_video_width_on_edit'));
+    $oembed = wconsumer_vimeo_get_oembed($video->vvid, variable_get('wconsumer_vimeo_video_width_on_view'));
     $video_info = unserialize($video->info);
     $video_info = array_pop($video_info);
     

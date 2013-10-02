@@ -1,23 +1,72 @@
-.wconsumer-vimeo-widget .wconsumer-vimeo-view-video { float: left; margin: 0px 20px 0px 0px; }
-.wconsumer-vimeo-widget .clear { clear: both; }
-.wconsumer-vimeo-widget .wconsumer-vimeo-widget-upload-videos { }
-.wconsumer-vimeo-widget .wconsumer-vimeo-widget-upload-videos span.file { }
-.wconsumer-vimeo-widget .wconsumer-vimeo-widget-existing-videos { margin: 20px 0px 0px 0px; display: block; }
-.wconsumer-vimeo-widget .wconsumer-vimeo-widget-existing-videos ul { list-style: none; margin: 0px 0px 0px 0px; }
-.wconsumer-vimeo-widget .wconsumer-vimeo-widget-existing-videos ul li { float: left; margin: 0px 20px 20px 0px; text-align: center; cursor: pointer; border: 3px solid #FFF; width: 200px; }
-.wconsumer-vimeo-widget .wconsumer-vimeo-widget-existing-videos ul li:hover { border: 3px solid #FF00FF; }
-.wconsumer-vimeo-widget .wconsumer-vimeo-widget-existing-videos ul li.selected { border: 3px solid #00FF00; }
-.wconsumer-vimeo-widget .wconsumer-vimeo-widget-existing-videos ul li span { display: block; margin: 5px 0px 0px 0px; font-weight: bold; }
-.wconsumer-vimeo-widget .wconsumer-vimeo-widget-existing-videos { display: none; }
-.wconsumer-vimeo-widget .wconsumer-vimeo-widget-upload-type { cursor: pointer; }
-.wconsumer-vimeo-widget .wconsumer-vimeo-widget-upload-type span { font-weight: bold; display: inline-block; margin-right: 10px; }
-.wconsumer-vimeo-widget .wconsumer-vimeo-widget-upload-type strong { font-weight: bold; }
-.wconsumer-vimeo-widget .wconsumer-vimeo-widget-upload-form { float: left; }
-.wconsumer-vimeo-widget .wconsumer-vimeo-widget-form { margin: 10px 0 10px 24px; }
-.wconsumer-vimeo-widget .wconsumer-vimeo-widget-pagination a { float: left; height: 14px; background: #E6E7E8; color: #000; line-height: 14px; margin-right: 10px; text-align: center; padding: 6px 6px; min-width: 14px; }
-.wconsumer-vimeo-widget .wconsumer-vimeo-widget-pagination a.selected { background: #0074BD; color: #FFF; }
-.wconsumer-vimeo-widget .wconsumer-vimeo-widget-pagination a.disabled { display: none; }
-.wconsumer-vimeo-widget .wconsumer-vimeo-widget-capture-video { width: 640px; text-align: center; }
-.wconsumer-vimeo-widget .wconsumer-vimeo-widget-capture-video .wconsumer-vimeo-widget-videostream { width: 640px; height: 480px; border: 1px solid #CCC; background: none repeat scroll 0 0 rgba(255, 255, 255, 0.5); }
-.wconsumer-vimeo-widget .wconsumer-vimeo-widget-capture-video .wconsumer-vimeo-widget-capture-buttons { text-align: center; margin-top: 10px; }
-.wconsumer-vimeo-widget .wconsumer-vimeo-widget-capture-video #wconsumer-vimeo-widget-capture-button { }
+@import url("http://fonts.googleapis.com/css?family=Open+Sans:700,300,400");
+.wconsumer-vimeo-browser-button { clear: both; }
+.wconsumer-vimeo-browser-button a { float: left; }
+.wconsumer-vimeo-view-video { clear: both; }
+
+/* Popup */
+.wconsumer-vimeo-popup-container { width: 935px; overflow: hidden; font-family: 'Open Sans'; font-weight: 300; }
+.wconsumer-vimeo-title-bar { border-bottom: 2px solid #ecf0f1; height: 38px; line-height: 38px; font-size: 16px; color: #2980b9; font-weight: 500; text-indent: 20px; font-family: 'Open Sans'; margin-bottom: 16px; }
+.wconsumer-vimeo-title-bar a { -webkit-border-radius: 5px; -moz-border-radius: 5px; border-radius: 5px; float: right; font-family: 'Open Sans'; font-size: 18px; text-align: center; color: #FFF; background-color: #939598; display: block; line-height: 30px; height: 30px; padding: 0px 15px; text-decoration: none; text-indent: 0px; }
+.wconsumer-vimeo-title-bar a:hover { text-decoration: none; }
+.wconsumer-vimeo-title-bar a#wconsumer_choose_video { margin: 4px 10px 0px 0px; background-color: #2980b9; }
+.wconsumer-vimeo-title-bar a#wconsumer_choose_video_cancel { margin: 4px 21px 0px 0px; }
+
+.wconsumer-vimeo-left-sidebar { width: 150px; float: left; margin-left: 8px; }
+.wconsumer-vimeo-left-sidebar .wconsumer-vimeo-block-inner { padding: 10px; }
+.wconsumer-vimeo-left-sidebar .wconsumer-vimeo-block-inner .wconsumer-vimeo-video-service a.video-server-type { font-size: 14px; display: block; height: 52px; line-height: 51px; -webkit-border-radius: 5px; -moz-border-radius: 5px; border-radius: 5px; cursor: pointer; font-size: 16px; color: #353535; padding-left: 50px; text-decoration: none; background-position: 13px 18px; background-repeat: no-repeat; }
+.wconsumer-vimeo-left-sidebar .wconsumer-vimeo-block-inner .wconsumer-vimeo-video-service.selected a { background-color: #ecf0f1; }
+.wconsumer-vimeo-left-sidebar .wconsumer-vimeo-block-inner .wconsumer-vimeo-video-service.vimeo a { background-image: url(images/icon_vimeo.png); }
+.wconsumer-vimeo-left-sidebar .wconsumer-vimeo-block-inner .wconsumer-vimeo-video-service.dropbox a { background-image: url(images/icon_dropbox.png); }
+
+.wconsumer-vimeo-upload-form .wconsumer-vimeo-field { overflow: hidden; padding: 10px 0px; }
+.wconsumer-vimeo-upload-form .wconsumer-vimeo-field .wconsumer-vimeo-field-label { width: 30%; float: left; }
+.wconsumer-vimeo-upload-form .wconsumer-vimeo-field .wconsumer-vimeo-field-value { width: 65%; float: right; }
+.wconsumer-vimeo-upload-form .wconsumer-vimeo-field .wconsumer-vimeo-field-value textarea { width: 95%; padding: 5px; border: 1px solid #000; }
+.wconsumer-vimeo-upload-form .wconsumer-vimeo-field .wconsumer-vimeo-field-value input[type="text"] { width: 95%; padding: 5px; border: 1px solid #000; }
+.wconsumer-vimeo-upload-form .wconsumer-vimeo-field .wconsumer-vimeo-field-value #wconsumer_vimeo_video_upload { float: left; width: 20%; }
+.wconsumer-vimeo-upload-form .wconsumer-vimeo-field .wconsumer-vimeo-field-value #wconsumer_vimeo_video_cancel { float: right; width: 20%; }
+.wconsumer-vimeo-upload-form .wconsumer-vimeo-field .wconsumer-vimeo-field-value #wconsumer_vimeo_video_file_container { border: 2px dashed #000; -webkit-border-radius: 10px; -moz-border-radius: 10px; border-radius: 10px; height: 200px; width: 98%; }
+.wconsumer-vimeo-upload-form .wconsumer-vimeo-field .wconsumer-vimeo-field-value #wconsumer_vimeo_delete_video { display: none; }
+
+.wconsumer-vimeo-content-bar { width: 740px; float: right; overflow: hidden; margin-right: 21px; }
+.wconsumer-vimeo-content-bar .wconsumer-vimeo-block-inner { }
+.wconsumer-vimeo-content-bar #wconsumer-vimeo-videos { /*height: 540px; overflow: scroll;*/ }
+
+#wconsumer-vimeo-upload-form-quota { height: 200px; }
+#wconsumer-vimeo-upload-form-quota .freespace { display: none; }
+#wconsumer-vimeo-upload-form-quota .usedspace { display: none; }
+
+#wconsumer-vimeo-videos ul { list-style: none; margin: 0px; overflow: hidden; padding: 0px 0px; }
+#wconsumer-vimeo-videos ul li { overflow: hidden; margin-bottom: 20px; position: relative; cursor: pointer; overflow: hidden; }
+#wconsumer-vimeo-videos ul li .selected-icon { position: absolute; top: 0px; left: 0px; right: 0px; background: url(images/icon_selected.png) no-repeat 50% 50%; display: none; border: 5px solid #2980b9; height: 121px; }
+#wconsumer-vimeo-videos ul li.selected .selected-icon { display: block; }
+#wconsumer-vimeo-videos ul li.selected .selected-icon img { width: auto; position: absolute; bottom: 5px; left: 5px; }
+#wconsumer-vimeo-videos ul li.last { margin-right: 0px; }
+#wconsumer-vimeo-videos ul li .inner { }
+#wconsumer-vimeo-videos ul li .inner-info { overflow: hidden; margin: 0px 0px 7px 0px; }
+#wconsumer-vimeo-videos ul li .inner-info span { font-weight: bold; line-height: 15px; font-size: 12px; color: #474747; display: block; float: left; text-align: left; }
+#wconsumer-vimeo-videos.grid ul li { float: left; text-align: center; width: 175px; margin: 0px 5px; position: relative; }
+#wconsumer-vimeo-videos.grid ul li.last { margin-right: 5px; }
+#wconsumer-vimeo-videos.grid ul li img { width: 175px; }
+#wconsumer-vimeo-videos.grid ul li p { display: none; }
+#wconsumer-vimeo-videos.list ul li { width: 100%; margin-right: 0px; }
+#wconsumer-vimeo-videos.list ul li img { float: left; width: 175px; }
+#wconsumer-vimeo-videos.list ul li .inner-info { float: right; width: 75%; }
+#wconsumer-vimeo-videos.list ul li .inner-info span { display: block; margin-bottom: 15px; float: none; }
+
+.wconsumer-vimeo-widget-pagination { overflow: hidden; margin: 10px 0px 10px 5px; }
+.wconsumer-vimeo-widget-pagination a { float: left; height: 14px; background: #E6E7E8; color: #000; line-height: 14px; margin-right: 10px; text-align: center; padding: 6px 6px; min-width: 14px; }
+.wconsumer-vimeo-widget-pagination a.selected { background: #0074BD; color: #FFF; }
+.wconsumer-vimeo-widget-pagination a.disabled { display: none; }
+
+/* Block for display videos */
+.wconsumer-vimeo-display-videos-toolbar { width: 100%; padding: 10px 0px; overflow: hidden; }
+.wconsumer-vimeo-display-videos-toolbar input[type="text"] { float: left; margin-left: 0px; border: 1px solid #939598; height: 32px; padding-left: 30px; padding-right: 5px; width: 300px; font-size: 14px; color: #2981b9; font-family: 'Open Sans'; -webkit-border-radius: 5px; -moz-border-radius: 5px; border-radius: 5px; background: url(images/icon_search.png) no-repeat 10px 9px; }
+.wconsumer-vimeo-display-videos-toolbar .wconsumer-vimeo-videos-view-mode-upload { float: right; border: 0px;  text-decoration: none; height: 32px; line-height: 32px; padding: 0px 22px; font-size: 14px; color: #FFF;  background: #2980b9; font-family: 'Open Sans'; -webkit-border-radius: 5px; -moz-border-radius: 5px; border-radius: 5px; margin-right: 37px; font-weight: bold; }
+.wconsumer-vimeo-display-videos-toolbar .wconsumer-vimeo-videos-view-mode { float: right; }
+.wconsumer-vimeo-display-videos-toolbar .wconsumer-vimeo-videos-view-mode strong { float: left; line-height: 15px; color: #2980b9; text-align: right; font-size: 12px; }
+.wconsumer-vimeo-display-videos-toolbar .wconsumer-vimeo-videos-view-mode a { float: left; background: url(images/icon_view_mode.png) no-repeat; display: block; height: 34px; width: 36px; margin-left: 10px; }
+.wconsumer-vimeo-display-videos-toolbar .wconsumer-vimeo-videos-view-mode a.list-mode { background-position: 0px 0px; }
+.wconsumer-vimeo-display-videos-toolbar .wconsumer-vimeo-videos-view-mode a.grid-mode { background-position: -36px 0px; }
+
+.clear { clear: both; }
